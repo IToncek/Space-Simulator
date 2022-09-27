@@ -41,7 +41,7 @@ jobs:
           path: ${{ steps.getManualLicenseFile.outputs.filePath }}
 
   test:
-    needs: [activation]
+    needs: [checklicense]
     if: needs.checklicense.outputs.is_unity_license_set == 'true'
     name: Test all modes ✨
     runs-on: ubuntu-latest
@@ -69,7 +69,7 @@ jobs:
           path: ${{ steps.testRunner.outputs.artifactsPath }}
 
   build:
-    needs: [test]
+    needs: [checklicense]
     if: needs.checklicense.outputs.is_unity_license_set == 'true'
     name: Build for ${{ matrix.targetPlatform }} 🔨
     runs-on: ubuntu-latest
@@ -103,7 +103,7 @@ jobs:
           path: build
 
   buildWithWindows:
-    needs: [test]
+    needs: [checklicense]
     if: needs.checklicense.outputs.is_unity_license_set == 'true'
     name: Build for ${{ matrix.targetPlatform }} 🕶
     runs-on: windows-2019
