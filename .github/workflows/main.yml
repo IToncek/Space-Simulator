@@ -12,7 +12,7 @@ env:
 
 jobs:
   checklicense:
-    name: check if UNITY_LICENSE is set in github secrets
+    name: Checking Unity integrity 🔎
     runs-on: ubuntu-latest
     outputs:
       is_unity_license_set: ${{ steps.checklicense_job.outputs.is_unity_license_set }}
@@ -41,7 +41,7 @@ jobs:
           path: ${{ steps.getManualLicenseFile.outputs.filePath }}
 
   test:
-    needs: [checklicense]
+    needs: [activation]
     if: needs.checklicense.outputs.is_unity_license_set == 'true'
     name: Test all modes ✨
     runs-on: ubuntu-latest
@@ -69,9 +69,9 @@ jobs:
           path: ${{ steps.testRunner.outputs.artifactsPath }}
 
   build:
-    needs: [checklicense]
+    needs: [test]
     if: needs.checklicense.outputs.is_unity_license_set == 'true'
-    name: Build for ${{ matrix.targetPlatform }}
+    name: Build for ${{ matrix.targetPlatform }} 🔨
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -102,42 +102,10 @@ jobs:
           name: Build-${{ matrix.targetPlatform }}
           path: build
 
-  buildWithMac:
-    needs: [checklicense]
-    if: needs.checklicense.outputs.is_unity_license_set == 'true'
-    name: Build for ${{ matrix.targetPlatform }}
-    runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        targetPlatform:
-          - StandaloneOSX
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-        with:
-          lfs: true
-      - uses: actions/cache@v3
-        with:
-          path: ${{ matrix.projectPath }}/Library
-          key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
-          restore-keys: |
-            Library-${{ matrix.projectPath }}-
-            Library-
-      - uses: game-ci/unity-builder@v2
-        with:
-          projectPath: ${{ env.PROJECT_PATH }}
-          targetPlatform: ${{ matrix.targetPlatform }}
-      - name: Upload Build
-        uses: actions/upload-artifact@v3
-        with:
-          name: Build-${{ matrix.targetPlatform }}
-          path: build
-
   buildWithWindows:
-    needs: [build, buildWithMac]
+    needs: [test]
     if: needs.checklicense.outputs.is_unity_license_set == 'true'
-    name: Build for ${{ matrix.targetPlatform }}
+    name: Build for ${{ matrix.targetPlatform }} 🕶
     runs-on: windows-2019
     strategy:
       fail-fast: false
